@@ -1,0 +1,44 @@
+# vim: set ft=yaml ts=2 sw=2 et :
+---
+
+name: build
+
+"on":
+  - push
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install build deps
+        run: |-
+          sudo apt update
+          sudo apt install -y qtbase5-dev-tools qtmultimedia5-dev cmake build-essential
+
+      - name: Configure CMake
+        run: >-
+          cmake
+          -B ${{github.workspace}}/build
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+      - name: Build
+        run: >-
+          cmake
+          --build ${{github.workspace}}/build
+          --config ${{env.BUILD_TYPE}}
+
+      - name: rename target
+        run: |
+          mv build/video build/video.${{ runner.os }}.${{ runner.arch }}
+
+      - uses: actions/upload-artifact@v3
+        with:
+          path: |
+            ${{github.workspace}}/build/video.${{ runner.os }}.${{ runner.arch }}
+          if-no-files-found: error
+
