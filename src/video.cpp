@@ -24,14 +24,16 @@ Video::Video(QWidget *parent) :
 	m_ui->tableView->setItemDelegateForColumn(1, new FilenameDelegate());
 
 	connect(m_ui->numEdit, &QLineEdit::textChanged, [this](const QString& filter){
-		m_proxy->setFilterRegExp("^" + filter);
-
-		QPalette p = m_ui->numEdit->palette();
-		if (m_proxy->rowCount() < 1)
-			p.setColor(QPalette::Text, Qt::red);
+		QString digits;
+		for (auto c : filter)
+		{
+			if (c.isDigit())
+				digits += c;
+		}
+		if (digits != filter)
+			m_ui->numEdit->setText(digits);
 		else
-			p.setColor(QPalette::Text, Qt::black);
-		m_ui->numEdit->setPalette(p);
+			m_proxy->setFilterRegExp("^" + digits);
 	});
 
 	connect(m_ui->numEdit, &QLineEdit::returnPressed, this, &Video::start);
